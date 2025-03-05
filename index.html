@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            background-color: #ff4d4d;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        #movie-form {
+            margin: 20px auto;
+            display: inline-block;
+        }
+        select, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #ff4d4d;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #e60000;
+        }
+        #recommendations {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ffcccc;
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .movie {
+            margin: 15px;
+            text-align: center;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+            max-width: 200px;
+        }
+        .movie:hover {
+            transform: scale(1.05);
+        }
+        img {
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie Recommender System</h1>
+    <form id="movie-form">
+        <select id="movie-select">
+            {% for movie in movies %}
+                <option value="{{ movie }}">{{ movie }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <div id="recommendations">
+        <!-- Recommendations will appear here -->
+    </div>
+
+    <script>
+        document.getElementById('movie-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const movie = document.getElementById('movie-select').value;
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ movie })
+            });
+            const data = await response.json();
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = '';
+            data.recommendations.forEach((recommendation) => {
+                const movieDiv = document.createElement('div');
+                movieDiv.className = 'movie';
+                movieDiv.innerHTML = `
+
+                    <img src="${recommendation.details.poster || 'https://via.placeholder.com/200x300?text=No+Poster+Available'}"
+                         alt="${recommendation.details.title}"
+                         onclick="openDetails(${recommendation.details.movie_id})">
+                    <h3>${recommendation.details.title}</h3>
+                `;
+                recommendations.appendChild(movieDiv);
+            });
+        });
+
+        function openDetails(movieId){
+            window.open(`/movie/${movieId}`, '_blank'); // Opens movie details in a new tab
+        }
+
+    </script>
+</body>
+</html>
